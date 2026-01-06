@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pamukkale Kaşifi</title>
+    <style>
+        :root {
+            --primary-blue: #00bcd4;
+            --soft-white: #f0faff;
+            --text-dark: #2c3e50;
+            --correct-green: #4caf50;
+            --wrong-red: #f44336;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #ffffff 100%);
+            overflow: hidden; /* Scroll engelleme */
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        header {
+            width: 100%; background: var(--primary-blue); color: white;
+            text-align: center; padding: 15px 0; font-size: 2.5em; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            flex: 1; width: 95%; max-width: 1100px;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        }
+
+        /* Giriş Sayfası */
+        #intro-page { text-align: center; background: white; border-radius: 20px; padding: 30px; border: 4px solid var(--primary-blue); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        #intro-page img {
+            width: 100%; max-height: 400px; object-fit: cover;
+            border-radius: 15px; margin-bottom: 20px; border: 3px solid var(--primary-blue);
+        }
+
+        .info-box { text-align: left; font-size: 1.2em; line-height: 1.6; color: var(--text-dark); margin: 20px 0; }
+        
+        .btn-start, .btn-link {
+            background: #ff9800; color: white; border: none; padding: 15px 40px;
+            border-radius: 30px; font-size: 1.2em; cursor: pointer; transition: 0.3s;
+            text-decoration: none; display: inline-block; margin-top: 10px; font-weight: bold;
+        }
+        .btn-link { background: #3498db; font-size: 1em; margin-bottom: 10px; }
+
+        /* Oyun Sayfası */
+        #game-page { display: none; height: 100%; flex-direction: column; gap: 15px; }
+        .video-container { width: 100%; height: 380px; border-radius: 15px; overflow: hidden; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        video { width: 100%; height: 100%; object-fit: contain; background: black; }
+
+        .quiz-area {
+            background: white; border-radius: 15px; padding: 20px; flex-grow: 1;
+            display: flex; flex-direction: column; justify-content: center; border: 2px solid var(--primary-blue);
+        }
+
+        .question { font-size: 1.4em; font-weight: bold; color: var(--text-dark); margin-bottom: 15px; text-align: center; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .option {
+            background: #f1f8ff; border: 2px solid #3498db; padding: 15px;
+            border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 1.1em; text-align: center; font-weight: 500;
+        }
+        .option:hover { background: #e3f2fd; transform: translateY(-2px); }
+
+        /* Geri Bildirim */
+        .feedback { font-weight: bold; margin-top: 15px; text-align: center; min-height: 30px; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<header>PAMUKKALE</header>
+
+<div class="container">
+    <div id="intro-page">
+        <img src="gorseller/pamukkale.jpg" alt="Pamukkale Travertenleri">
+        
+        <div class="info-box">
+            Denizli’nin çok fazla ve birbirinden güzel turistik yerleri vardır. Bunlardan bir tanesi <b>Pamukkale</b>’dir. Pamukkale bugünden yaklaşık <b>400 bin yıl önce</b> oluşmuştur. Sıcak sularında kalsiyum karbonat vardır. Bu minareli su akarken yavaş yavaş soğur ve soğurken de beyaz kireç oluşturur. Ve pamuk gibi beyaz olan taşları hayata getirir.
+        </div>
+
+        <a href="https://drive.google.com/file/d/14EFpCCBq5ZBgsUQ2wsbHn6L2i2YDvRdh/view?usp=drive_link" target="_blank" class="btn-link">Beyza İpek Özaydın'ın çalışmasının tamamına ulaşmak için tıklayın</a>
+        <br>
+        <button class="btn-start" onclick="startGame()">Videoyu İzle ve Keşfet ▶</button>
+    </div>
+
+    <div id="game-page">
+        <div class="video-container">
+            <video id="pamuVideo" controls>
+                <source src="videolar/video.mp4" type="video/mp4">
+            </video>
+        </div>
+        <div class="quiz-area" id="quiz-area">
+            <div id="q-text" class="question">Soru Yükleniyor...</div>
+            <div id="options" class="options"></div>
+            <div id="feedback" class="feedback"></div>
+        </div>
+    </div>
+</div>
+
+<audio id="sound-correct" src="sesler/dogru.mp3"></audio>
+<audio id="sound-wrong" src="sesler/yanlis.mp3"></audio>
+
+<script>
+    const questions = [
+        {
+            q: "Pamukkale travertenleri yaklaşık kaç bin yıl önce oluşmaya başlamıştır?",
+            options: ["100 Bin Yıl", "400 Bin Yıl", "500 Bin Yıl", "50 Bin Yıl"],
+            correct: 1 //
+        },
+        {
+            q: "Suların içindeki hangi madde travertenlerin beyaz rengini oluşturur?",
+            options: ["Kalsiyum Karbonat", "Demir Oksit", "Sülfür", "Kömür Tozu"],
+            correct: 0 //
+        },
+        {
+            q: "Pamukkale'de sıcaklığı 35-100 derece arasında değişen kaç adet termal su kaynağı vardır?",
+            options: ["5 Adet", "12 Adet", "17 Adet", "21 Adet"],
+            correct: 2 //
+        },
+        {
+            q: "Pamukkale ve Hierapolis antik kenti hangi kurum tarafından korunmaktadır?",
+            options: ["TEMA Vakfı", "UNESCO", "Greenpeace", "AFAD"],
+            correct: 1 //
+        }
+    ];
+
+    let currentQ = 0;
+
+    function startGame() {
+        document.getElementById('intro-page').style.display = 'none';
+        document.getElementById('game-page').style.display = 'flex';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentQ >= questions.length) {
+            document.getElementById('quiz-area').innerHTML = "<h2>Harika! Tüm soruları cevaplayarak Pamukkale uzmanı oldun! 🎓🎉</h2>";
+            return;
+        }
+        const qData = questions[currentQ];
+        document.getElementById('q-text').innerText = (currentQ + 1) + ". " + qData.q;
+        const optDiv = document.getElementById('options');
+        optDiv.innerHTML = "";
+        document.getElementById('feedback').innerText = "";
+
+        qData.options.forEach((opt, index) => {
+            const btn = document.createElement('div');
+            btn.className = 'option';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index);
+            optDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(idx) {
+        const correctIdx = questions[currentQ].correct;
+        const feedback = document.getElementById('feedback');
+        
+        if (idx === correctIdx) {
+            document.getElementById('sound-correct').play();
+            feedback.innerText = "Süpersin! Doğru Yanıt. 🌟";
+            feedback.style.color = "green";
+            setTimeout(() => {
+                currentQ++;
+                loadQuestion();
+            }, 2000);
+        } else {
+            document.getElementById('sound-wrong').play();
+            feedback.innerText = "Maalesef yanlış, videoyu dikkatle tekrar dinle! 🧐";
+            feedback.style.color = "red";
+        }
+    }
+</script>
+
+</body>
+</html>
